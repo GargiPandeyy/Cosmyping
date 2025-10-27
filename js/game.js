@@ -156,7 +156,9 @@ function executeCommand(command) {
 }
 
 function handleHangarInput(key) {
-    if (key === '1') {
+    if (key === 'Escape') {
+        sceneManager.setScene(SceneType.MENU);
+    } else if (key === '1') {
         if (player.upgradeEngineCore()) {
             player.save();
         }
@@ -219,7 +221,8 @@ function spawnEnemy() {
     }
 
     if (enemy) {
-        enemy.speed += player.upgrades.engineCore * 0.3;
+        enemy.speed -= player.upgrades.engineCore * 0.2;
+        if (enemy.speed < 0.3) enemy.speed = 0.3;
         enemies.push(enemy);
     }
 }
@@ -274,7 +277,7 @@ function update() {
 
         let speedMultiplier = 1;
         if (timeWarpActive) {
-            speedMultiplier *= 0.5;
+            speedMultiplier = 0.5;
             timeWarpDuration--;
             if (timeWarpDuration <= 0) {
                 timeWarpActive = false;
@@ -282,8 +285,10 @@ function update() {
         }
 
         enemies.forEach(enemy => {
+            const originalSpeed = enemy.speed;
             enemy.speed *= speedMultiplier;
             enemy.update();
+            enemy.speed = originalSpeed;
             if (enemy instanceof Mine && enemy.timer <= 0) {
                 player.loseLife();
                 enemy.active = false;
@@ -391,6 +396,4 @@ function gameLoop() {
     draw();
     requestAnimationFrame(gameLoop);
 }
-
-const inputManager = inputManager;
 

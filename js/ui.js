@@ -162,8 +162,12 @@ class UI {
 
         upgrades.forEach((upgrade, i) => {
             const y = 200 + i * 80;
-            this.ctx.fillStyle = '#ffffff';
+            this.ctx.fillStyle = '#00ff00';
             this.ctx.textAlign = 'left';
+            this.ctx.font = 'bold 24px monospace';
+            this.ctx.fillText(`[${i + 1}]`, 50, y);
+
+            this.ctx.fillStyle = '#ffffff';
             this.ctx.font = 'bold 20px monospace';
             this.ctx.fillText(upgrade.name, 100, y);
 
