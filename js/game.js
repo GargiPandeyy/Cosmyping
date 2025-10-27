@@ -1,3 +1,4 @@
+
 const canvas = document.getElementById('gameCanvas');
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
@@ -8,9 +9,12 @@ let inputManager = new InputManager();
 let player = new Player();
 let ui = new UI(ctx, canvas);
 let sceneManager = new SceneManager();
+let background = new Background(canvas);
+let playerShip = new PlayerShip(100, canvas.height / 2);
 let wordList = [];
 let enemies = [];
 let particles = [];
+let fragments = [];
 let level = 1;
 let enemySpawnTimer = 0;
 let enemySpawnRate = 180;
@@ -21,15 +25,21 @@ let scribesFocusCount = 0;
 let bossActive = false;
 let boss = null;
 let showPauseMenu = false;
+let mouseY = canvas.height / 2;
 
 function resizeCanvas() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
+    background.resize(canvas.width, canvas.height);
+    playerShip.setPosition(100, canvas.height / 2);
 }
 
 window.addEventListener('resize', resizeCanvas);
 window.addEventListener('keydown', handleKeyDown);
 window.addEventListener('keyup', handleKeyUp);
+window.addEventListener('mousemove', (event) => {
+    mouseY = event.clientY;
+});
 
 player.load();
 
@@ -67,13 +77,15 @@ function handleKeyDown(event) {
     } else if (sceneManager.getCurrentScene() === SceneType.HANGAR) {
         handleHangarInput(key);
     } else if (sceneManager.getCurrentScene() === SceneType.GAMEPLAY) {
-        if (key === 'p' || key === 'P') {
-            showPauseMenu = !showPauseMenu;
-        }
-
         if (key === 'Escape') {
             sceneManager.setScene(SceneType.MENU);
             resetGame();
+            return;
+        }
+
+        if ((key === 'p' || key === 'P') && inputManager.buffer.length === 0) {
+            showPauseMenu = !showPauseMenu;
+            return;
         }
 
         if (!showPauseMenu) {
@@ -235,7 +247,12 @@ function spawnBoss() {
 }
 
 function update() {
+
+    background.update();
+
     if (sceneManager.getCurrentScene() === SceneType.GAMEPLAY && !showPauseMenu) {
+
+        playerShip.update(mouseY, player.upgrades.shieldGenerator > 0);
         if (bossActive && boss) {
             if (boss.shieldActive) {
                 if (inputManager.buffer.length > 0 && boss.words && boss.words[0]) {
@@ -306,6 +323,9 @@ function update() {
         particles.forEach(p => p.update());
         particles = particles.filter(p => !p.isDead());
 
+        fragments.forEach(f => f.update());
+        fragments = fragments.filter(f => !f.isDead());
+
         player.updateAbilities();
         player.updateWPM();
 
@@ -333,6 +353,29 @@ function destroyEnemy(enemy) {
     if (!enemy) return;
 
     enemy.active = false;
+    const centerX = enemy.x + enemy.size / 2;
+    const centerY = enemy.y + enemy.size / 2;
+
+    particles.push(new Shockwave(centerX, centerY, '#ffff00', enemy.size * 2));
+
+    const particleCount = enemy instanceof Boss ? 50 : enemy instanceof Cruiser ? 30 : 20;
+    const colors = enemy instanceof Boss ? ['#ff0000', '#ff8800', '#ffff00'] :
+                   enemy instanceof CorruptedAsteroid ? ['#ffaa00', '#ff8800', '#ffdd88'] :
+                   ['#ffff00', '#ff8800', '#ffffff'];
+
+    for (let i = 0; i < particleCount; i++) {
+        particles.push(new ExplosionParticle(centerX, centerY, Utils.choose(colors)));
+    }
+
+    for (let i = 0; i < 8; i++) {
+        particles.push(new DebrisParticle(centerX, centerY));
+    }
+
+    if (enemy instanceof CorruptedAsteroid && enemy.canFragment) {
+        const asteroidFragments = enemy.createFragments();
+        fragments.push(...asteroidFragments);
+    }
+
     enemies = enemies.filter(e => e !== enemy);
 
     if (scribesFocusActive) {
@@ -340,10 +383,6 @@ function destroyEnemy(enemy) {
         if (scribesFocusCount <= 0) {
             scribesFocusActive = false;
         }
-    }
-
-    for (let i = 0; i < 10; i++) {
-        particles.push(new Particle(enemy.x + enemy.size / 2, enemy.y + enemy.size / 2, '#ffff00'));
     }
 
     player.addCombo();
@@ -358,6 +397,8 @@ function destroyEnemy(enemy) {
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+    background.draw(ctx);
+
     if (sceneManager.getCurrentScene() === SceneType.MENU) {
         const menuOptions = [
             { text: 'START GAME', action: 'start' },
@@ -368,11 +409,16 @@ function draw() {
     } else if (sceneManager.getCurrentScene() === SceneType.HANGAR) {
         ui.drawHangar(player);
     } else if (sceneManager.getCurrentScene() === SceneType.GAMEPLAY) {
+
+        playerShip.draw(ctx);
+
         enemies.forEach(enemy => {
             if (enemy.active) {
                 enemy.draw(ctx);
             }
         });
+
+        fragments.forEach(f => f.draw(ctx));
 
         particles.forEach(p => p.draw(ctx));
 
@@ -396,4 +442,3 @@ function gameLoop() {
     draw();
     requestAnimationFrame(gameLoop);
 }
-

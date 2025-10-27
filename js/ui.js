@@ -1,60 +1,154 @@
+
 class UI {
     constructor(ctx, canvas) {
         this.ctx = ctx;
         this.canvas = canvas;
         this.fontSize = 20;
+        this.scanlineOffset = 0;
+    }
+
+    drawScanlines() {
+
+        this.ctx.save();
+        this.ctx.globalAlpha = 0.05;
+        this.ctx.fillStyle = '#00ffff';
+        for (let i = 0; i < this.canvas.height; i += 4) {
+            this.ctx.fillRect(0, (i + this.scanlineOffset) % this.canvas.height, this.canvas.width, 2);
+        }
+        this.scanlineOffset = (this.scanlineOffset + 1) % 4;
+        this.ctx.restore();
+    }
+
+    drawPanel(x, y, width, height, color = '#00ffff') {
+
+        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+        this.ctx.fillRect(x, y, width, height);
+
+        this.ctx.strokeStyle = color;
+        this.ctx.lineWidth = 2;
+        this.ctx.shadowBlur = 10;
+        this.ctx.shadowColor = color;
+        this.ctx.strokeRect(x, y, width, height);
+
+        this.ctx.lineWidth = 3;
+        const cornerSize = 10;
+
+        this.ctx.beginPath();
+        this.ctx.moveTo(x, y + cornerSize);
+        this.ctx.lineTo(x, y);
+        this.ctx.lineTo(x + cornerSize, y);
+        this.ctx.stroke();
+
+        this.ctx.beginPath();
+        this.ctx.moveTo(x + width - cornerSize, y);
+        this.ctx.lineTo(x + width, y);
+        this.ctx.lineTo(x + width, y + cornerSize);
+        this.ctx.stroke();
+
+        this.ctx.beginPath();
+        this.ctx.moveTo(x, y + height - cornerSize);
+        this.ctx.lineTo(x, y + height);
+        this.ctx.lineTo(x + cornerSize, y + height);
+        this.ctx.stroke();
+
+        this.ctx.beginPath();
+        this.ctx.moveTo(x + width - cornerSize, y + height);
+        this.ctx.lineTo(x + width, y + height);
+        this.ctx.lineTo(x + width, y + height - cornerSize);
+        this.ctx.stroke();
+
+        this.ctx.shadowBlur = 0;
     }
 
     drawHUD(player) {
-        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-        this.ctx.fillRect(10, 10, 300, 150);
+        this.drawPanel(10, 10, 300, 160, '#00d9ff');
+
+        this.ctx.fillStyle = '#00d9ff';
+        this.ctx.font = 'bold 24px monospace';
+        this.ctx.shadowBlur = 5;
+        this.ctx.shadowColor = '#00d9ff';
+        this.ctx.fillText('SCORE: ' + player.score.toString(), 20, 40);
+        this.ctx.shadowBlur = 0;
 
         this.ctx.fillStyle = '#ffffff';
-        this.ctx.font = 'bold 24px monospace';
-        this.ctx.fillText('SCORE: ' + player.score.toString(), 20, 35);
-
         this.ctx.font = '20px monospace';
-        this.ctx.fillText('COMBO: ' + player.combo + 'x', 20, 60);
+        this.ctx.fillText('COMBO: ' + player.combo + 'x', 20, 70);
 
-        this.ctx.fillText('WPM: ' + Math.floor(player.wpm).toString(), 20, 85);
+        this.ctx.fillText('WPM: ' + Math.floor(player.wpm).toString(), 20, 95);
 
         for (let i = 0; i < player.maxLives; i++) {
-            const color = i < player.lives ? '#ff0000' : '#666666';
+            const color = i < player.lives ? '#ff0000' : '#444444';
             this.ctx.fillStyle = color;
+            if (i < player.lives) {
+                this.ctx.shadowBlur = 8;
+                this.ctx.shadowColor = '#ff0000';
+            }
             this.ctx.beginPath();
-            this.ctx.arc(20 + i * 25, 110, 8, 0, Math.PI * 2);
+            this.ctx.arc(20 + i * 25, 120, 8, 0, Math.PI * 2);
             this.ctx.fill();
+            this.ctx.shadowBlur = 0;
         }
 
         this.ctx.fillStyle = '#00ff00';
-        this.ctx.fillText('FRAGMENTS: ' + player.dataFragments, 20, 140);
+        this.ctx.shadowBlur = 5;
+        this.ctx.shadowColor = '#00ff00';
+        this.ctx.fillText('FRAGMENTS: ' + player.dataFragments, 20, 150);
+        this.ctx.shadowBlur = 0;
 
         this.drawAbilities(player);
+        this.drawScanlines();
     }
 
     drawAbilities(player) {
-        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-        this.ctx.fillRect(this.canvas.width - 350, 10, 340, 100);
+        this.drawPanel(this.canvas.width - 350, 10, 340, 110, '#00ff00');
 
         const abilities = [
             { name: 'NOVA', key: 'Q', cooldown: player.abilities.nova },
-            { name: 'TIME', key: 'W', cooldown: player.abilities.timeWarp },
+            { name: 'TIME WARP', key: 'W', cooldown: player.abilities.timeWarp },
             { name: 'FOCUS', key: 'E', cooldown: player.abilities.focus }
         ];
 
         abilities.forEach((ability, i) => {
-            const x = this.canvas.width - 340;
-            const y = 35 + i * 30;
+            const x = this.canvas.width - 335;
+            const y = 40 + i * 30;
 
             const ready = ability.cooldown.cooldown <= 0;
-            this.ctx.fillStyle = ready ? '#00ff00' : '#888888';
-            this.ctx.font = '18px monospace';
-            this.ctx.fillText(`${ability.key} - ${ability.name}`, x, y);
+
+            this.ctx.fillStyle = ready ? '#00ff00' : '#555555';
+            this.ctx.strokeStyle = ready ? '#00ff00' : '#555555';
+            this.ctx.lineWidth = 2;
+            if (ready) {
+                this.ctx.shadowBlur = 8;
+                this.ctx.shadowColor = '#00ff00';
+            }
+            this.ctx.strokeRect(x, y - 15, 25, 20);
+            this.ctx.shadowBlur = 0;
+
+            this.ctx.font = 'bold 14px monospace';
+            this.ctx.fillText(ability.key, x + 7, y);
+
+            this.ctx.fillStyle = ready ? '#ffffff' : '#666666';
+            this.ctx.font = '16px monospace';
+            this.ctx.fillText(ability.name, x + 35, y);
 
             if (!ready) {
                 const cd = Math.ceil(ability.cooldown.cooldown / 60);
-                this.ctx.fillStyle = '#ff0000';
-                this.ctx.fillText(`${cd}s`, x + 150, y);
+                this.ctx.fillStyle = '#ff6666';
+                this.ctx.font = 'bold 16px monospace';
+                this.ctx.fillText(`${cd}s`, x + 200, y);
+
+                const progress = ability.cooldown.cooldown / ability.cooldown.maxCooldown;
+                this.ctx.fillStyle = 'rgba(100, 100, 100, 0.5)';
+                this.ctx.fillRect(x + 35, y + 5, 150, 4);
+                this.ctx.fillStyle = '#ff6666';
+                this.ctx.fillRect(x + 35, y + 5, 150 * (1 - progress), 4);
+            } else {
+                this.ctx.fillStyle = '#00ff00';
+                this.ctx.font = 'bold 14px monospace';
+                this.ctx.shadowBlur = 5;
+                this.ctx.shadowColor = '#00ff00';
+                this.ctx.fillText('READY', x + 200, y);
+                this.ctx.shadowBlur = 0;
             }
         });
     }
@@ -236,4 +330,3 @@ class UI {
         }
     }
 }
-
