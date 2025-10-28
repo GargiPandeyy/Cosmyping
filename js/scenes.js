@@ -1,6 +1,7 @@
 const SceneType = {
     BOOT: 'boot',
     MENU: 'menu',
+    TUTORIAL: 'tutorial',
     GAMEPLAY: 'gameplay',
     HANGAR: 'hangar',
     GAMEOVER: 'gameover',

@@ -329,4 +329,86 @@ class UI {
             this.ctx.fillText('HEALTH: ' + Math.ceil(boss.health), 20, this.canvas.height - 40);
         }
     }
+
+    drawTutorial() {
+        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.95)';
+        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+        this.ctx.textAlign = 'center';
+
+        this.ctx.fillStyle = '#00d9ff';
+        this.ctx.font = 'bold 56px monospace';
+        this.ctx.shadowBlur = 15;
+        this.ctx.shadowColor = '#00d9ff';
+        this.ctx.fillText('COSMYPING: THE LAST SCRIBE', this.canvas.width / 2, 80);
+        this.ctx.shadowBlur = 0;
+
+        const storyY = 140;
+        this.ctx.fillStyle = '#ffaa00';
+        this.ctx.font = 'bold 28px monospace';
+        this.ctx.fillText('THE STORY', this.canvas.width / 2, storyY);
+
+        this.ctx.fillStyle = '#ffffff';
+        this.ctx.font = '18px monospace';
+        const storyLines = [
+            'In the year 2847, the Data Corruption has consumed entire sectors.',
+            'You are the last Scribe, humanity\'s final hope.',
+            'Your ship\'s quantum typewriter can destroy corrupted entities',
+            'by typing their designation codes correctly.',
+            'Fight through waves of corrupted data and defeat the Titan Bosses',
+            'to restore order to the digital cosmos.'
+        ];
+        storyLines.forEach((line, i) => {
+            this.ctx.fillText(line, this.canvas.width / 2, storyY + 40 + i * 30);
+        });
+
+        const controlsY = storyY + 230;
+        this.drawPanel(this.canvas.width / 2 - 400, controlsY, 800, 280, '#00ff00');
+
+        this.ctx.fillStyle = '#00ff00';
+        this.ctx.font = 'bold 32px monospace';
+        this.ctx.fillText('CONTROLS', this.canvas.width / 2, controlsY + 40);
+
+        this.ctx.font = '20px monospace';
+        this.ctx.textAlign = 'left';
+        const leftX = this.canvas.width / 2 - 380;
+
+        this.ctx.fillStyle = '#ffffff';
+        this.ctx.fillText('TYPE WORDS: Destroy enemies by typing their words', leftX, controlsY + 85);
+        this.ctx.fillText('ENTER/SPACE: Confirm typed word', leftX, controlsY + 115);
+        this.ctx.fillText('BACKSPACE: Delete last character', leftX, controlsY + 145);
+
+        this.ctx.fillStyle = '#ffaa00';
+        this.ctx.font = 'bold 22px monospace';
+        this.ctx.fillText('SPECIAL ABILITIES:', leftX, controlsY + 185);
+
+        this.ctx.font = '18px monospace';
+        const abilities = [
+            { key: 'Q', name: 'NOVA', desc: 'Destroy all enemies on screen' },
+            { key: 'W', name: 'TIME WARP', desc: 'Slow down all enemies' },
+            { key: 'E', name: 'FOCUS', desc: 'Instantly destroy next 3 enemies' }
+        ];
+
+        abilities.forEach((ability, i) => {
+            const y = controlsY + 215 + i * 25;
+            this.ctx.fillStyle = '#00ff00';
+            this.ctx.strokeStyle = '#00ff00';
+            this.ctx.lineWidth = 2;
+            this.ctx.strokeRect(leftX, y - 15, 25, 20);
+            this.ctx.fillText(ability.key, leftX + 7, y);
+
+            this.ctx.fillStyle = '#ffffff';
+            this.ctx.fillText(`${ability.name}: ${ability.desc}`, leftX + 35, y);
+        });
+
+        this.ctx.textAlign = 'center';
+        this.ctx.fillStyle = '#00d9ff';
+        this.ctx.font = 'bold 24px monospace';
+        this.ctx.shadowBlur = 10;
+        this.ctx.shadowColor = '#00d9ff';
+        this.ctx.fillText('Press ENTER to return to menu', this.canvas.width / 2, this.canvas.height - 40);
+        this.ctx.shadowBlur = 0;
+
+        this.drawScanlines();
+    }
 }

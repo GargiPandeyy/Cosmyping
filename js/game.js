@@ -63,16 +63,23 @@ function handleKeyDown(event) {
     if (sceneManager.getCurrentScene() === SceneType.MENU) {
         const menuOptions = [
             { text: 'START GAME', action: 'start' },
+            { text: 'TUTORIAL', action: 'tutorial' },
             { text: 'HANGAR', action: 'hangar' },
             { text: 'QUIT', action: 'quit' }
         ];
         const action = sceneManager.handleMenuNavigation(key, menuOptions);
         if (action === 'start') {
             startGame();
+        } else if (action === 'tutorial') {
+            sceneManager.setScene(SceneType.TUTORIAL);
         } else if (action === 'hangar') {
             sceneManager.setScene(SceneType.HANGAR);
         } else if (action === 'quit') {
             window.close();
+        }
+    } else if (sceneManager.getCurrentScene() === SceneType.TUTORIAL) {
+        if (key === 'Enter' || key === 'Escape') {
+            sceneManager.setScene(SceneType.MENU);
         }
     } else if (sceneManager.getCurrentScene() === SceneType.HANGAR) {
         handleHangarInput(key);
@@ -402,10 +409,13 @@ function draw() {
     if (sceneManager.getCurrentScene() === SceneType.MENU) {
         const menuOptions = [
             { text: 'START GAME', action: 'start' },
+            { text: 'TUTORIAL', action: 'tutorial' },
             { text: 'HANGAR', action: 'hangar' },
             { text: 'QUIT', action: 'quit' }
         ];
         ui.drawMenu('COSMYPING', menuOptions, sceneManager.menuSelection);
+    } else if (sceneManager.getCurrentScene() === SceneType.TUTORIAL) {
+        ui.drawTutorial();
     } else if (sceneManager.getCurrentScene() === SceneType.HANGAR) {
         ui.drawHangar(player);
     } else if (sceneManager.getCurrentScene() === SceneType.GAMEPLAY) {
