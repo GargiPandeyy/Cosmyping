@@ -33,6 +33,8 @@ The most complex part was designing the real-time input matching system that tra
 
 Building the boss battle system with multi-phase mechanics, shield systems, and complex animation states taught me about game state machines and event-driven programming. Additionally, implementing LocalStorage persistence for player progress and understanding the game loop timing with requestAnimationFrame were significant learning experiences that gave me deeper insight into browser APIs and game development fundamentals.
 
+it is still in progress but you still can enjoy it.
+
 Learned a lot!
 
 [![Athena Award Badge](https://img.shields.io/endpoint?url=https%3A%2F%2Faward.athena.hackclub.com%2Fapi%2Fbadge)](https://award.athena.hackclub.com?utm_source=readme)
